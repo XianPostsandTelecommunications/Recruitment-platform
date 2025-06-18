@@ -1,10 +1,14 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	mrand "math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,6 +31,27 @@ type Applicant struct {
 	ThirdRemark string    `json:"third_remark"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// 管理员结构
+type Admin struct {
+	ID       int    `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"-"` // 不返回密码
+	Role     string `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// 登录请求结构
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
+// 登录响应结构
+type LoginResponse struct {
+	Token string `json:"token"`
+	User  Admin  `json:"user"`
 }
 
 // 申请请求结构
@@ -68,6 +93,18 @@ var nextID = 1
 
 // 验证码存储（实际项目中应该使用Redis）
 var verificationCodes = make(map[string]*VerificationCode)
+
+// 管理员账户（实际项目中应该存储在数据库中）
+var adminAccount = &Admin{
+	ID:        1,
+	Email:     "1234567@qq.com",
+	Password:  "epi666",
+	Role:      "admin",
+	CreatedAt: time.Now(),
+}
+
+// JWT token存储（实际项目中应该使用Redis）
+var adminTokens = make(map[string]time.Time)
 
 // 生成6位随机验证码
 func generateVerificationCode() string {
@@ -147,6 +184,51 @@ func verifyCode(email, code string) bool {
 	return false
 }
 
+// 生成JWT token
+func generateToken(email string) string {
+	header := `{"alg":"HS256","typ":"JWT"}`
+	payload := fmt.Sprintf(`{"email":"%s","exp":%d}`, email, time.Now().Add(24*time.Hour).Unix())
+	
+	headerB64 := base64.RawURLEncoding.EncodeToString([]byte(header))
+	payloadB64 := base64.RawURLEncoding.EncodeToString([]byte(payload))
+	
+	signature := hmac.New(sha256.New, []byte("your-secret-key"))
+	signature.Write([]byte(headerB64 + "." + payloadB64))
+	signatureB64 := base64.RawURLEncoding.EncodeToString(signature.Sum(nil))
+	
+	return headerB64 + "." + payloadB64 + "." + signatureB64
+}
+
+// 验证JWT token
+func verifyToken(tokenString string) (string, bool) {
+	parts := strings.Split(tokenString, ".")
+	if len(parts) != 3 {
+		return "", false
+	}
+	
+	// 检查token是否在存储中且未过期
+	if expiry, exists := adminTokens[tokenString]; exists && time.Now().Before(expiry) {
+		// 解析payload获取email
+		payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
+		if err != nil {
+			return "", false
+		}
+		
+		// 简单的JSON解析，实际项目中应该使用proper JSON parser
+		payload := string(payloadBytes)
+		if strings.Contains(payload, adminAccount.Email) {
+			return adminAccount.Email, true
+		}
+	}
+	
+	return "", false
+}
+
+// 管理员登录验证
+func verifyAdminLogin(email, password string) bool {
+	return email == adminAccount.Email && password == adminAccount.Password
+}
+
 func main() {
 	// 初始化随机数种子（Go 1.20+中自动初始化，无需手动调用rand.Seed）
 	
@@ -185,6 +267,42 @@ func main() {
 	// API路由组
 	api := r.Group("/api/v1")
 	{
+		// 管理员登录
+		api.POST("/auth/login", func(c *gin.Context) {
+			var req LoginRequest
+
+			if err := c.ShouldBindJSON(&req); err != nil {
+				c.JSON(http.StatusBadRequest, ApiResponse{
+					Code:    400,
+					Message: "请求参数错误: " + err.Error(),
+				})
+				return
+			}
+
+			// 验证管理员账户
+			if !verifyAdminLogin(req.Email, req.Password) {
+				c.JSON(http.StatusUnauthorized, ApiResponse{
+					Code:    401,
+					Message: "邮箱或密码错误",
+				})
+				return
+			}
+
+			// 生成JWT token
+			token := generateToken(req.Email)
+			adminTokens[token] = time.Now().Add(24 * time.Hour)
+
+			// 返回登录成功响应
+			c.JSON(http.StatusOK, ApiResponse{
+				Code:    200,
+				Message: "登录成功",
+				Data: LoginResponse{
+					Token: token,
+					User:  *adminAccount,
+				},
+			})
+		})
+
 		// 发送验证码
 		api.POST("/send-code", func(c *gin.Context) {
 			var req struct {
