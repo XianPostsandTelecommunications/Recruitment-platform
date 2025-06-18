@@ -89,14 +89,18 @@ const AppRouter: React.FC = () => {
         </div>
       }>
         <Routes>
-          {/* 首页 */}
-          <Route path="/" element={<TestHome />} />
+          {/* 首页重定向到报名实验室页面 */}
+          <Route path="/" element={<Navigate to="/apply" replace />} />
           
           {/* 面试申请页面 */}
           <Route path="/apply" element={<InterviewApplication />} />
           
-          {/* 管理员后台 */}
-          <Route path="/admin" element={<AdminDashboard />} />
+          {/* 管理员后台，登录守卫 */}
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
           
           {/* 公共路由 */}
           <Route path="/login" element={
@@ -111,19 +115,31 @@ const AppRouter: React.FC = () => {
           } />
           
           {/* 受保护的路由 */}
-          <Route path="/" element={
+          <Route path="/dashboard" element={
             <ProtectedRoute>
-              <MainLayout />
+              <Dashboard />
             </ProtectedRoute>
-          }>
-            <Route index element={<Home />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="profile" element={<LazyComponent />} />
-            <Route path="labs" element={<LazyComponent />} />
-            <Route path="applications" element={<LazyComponent />} />
-            <Route path="notifications" element={<LazyComponent />} />
-          </Route>
-          
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <LazyComponent />
+            </ProtectedRoute>
+          } />
+          <Route path="/labs" element={
+            <ProtectedRoute>
+              <LazyComponent />
+            </ProtectedRoute>
+          } />
+          <Route path="/applications" element={
+            <ProtectedRoute>
+              <LazyComponent />
+            </ProtectedRoute>
+          } />
+          <Route path="/notifications" element={
+            <ProtectedRoute>
+              <LazyComponent />
+            </ProtectedRoute>
+          } />
           {/* 404页面 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
