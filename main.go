@@ -373,13 +373,15 @@ func main() {
 				return
 			}
 
-			// 验证验证码
-			if !verifyCode(req.Email, req.VerificationCode) {
-				c.JSON(http.StatusBadRequest, ApiResponse{
-					Code:    400,
-					Message: "验证码错误或已过期",
-				})
-				return
+			// 后台添加时，verification_code 为 'admin' 直接放行
+			if req.VerificationCode != "admin" {
+				if !verifyCode(req.Email, req.VerificationCode) {
+					c.JSON(http.StatusBadRequest, ApiResponse{
+						Code:    400,
+						Message: "验证码错误或已过期",
+					})
+					return
+				}
 			}
 
 			// 检查是否已经申请过

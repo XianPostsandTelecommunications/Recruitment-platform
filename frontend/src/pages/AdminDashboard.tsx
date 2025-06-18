@@ -16,6 +16,9 @@ import {
   Statistic,
   Tooltip,
   Popconfirm,
+  DatePicker,
+  TimePicker,
+  Alert,
 } from 'antd';
 import {
   EyeOutlined,
@@ -56,6 +59,9 @@ const AdminDashboard: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [form] = Form.useForm();
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [addForm] = Form.useForm();
+  const [addLoading, setAddLoading] = useState(false);
 
   // 获取申请者列表
   const fetchApplicants = async () => {
@@ -167,6 +173,45 @@ const AdminDashboard: React.FC = () => {
 
   const stats = getStats();
 
+  // 添加面试申请
+  const handleAddApplicant = async (values: any) => {
+    console.log('handleAddApplicant called', values);
+    setAddLoading(true);
+    try {
+      const interviewDateTime = values.interview_date
+        .hour(values.interview_time.hour())
+        .minute(values.interview_time.minute())
+        .format('YYYY-MM-DD HH:mm');
+      const response = await fetch('/api/v1/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          student_id: values.student_id,
+          major: values.major,
+          grade: values.grade,
+          interview_time: interviewDateTime,
+          verification_code: 'admin', // 后端如必填可用占位
+        }),
+      });
+      const data = await response.json();
+      if (data.code === 200) {
+        message.success('添加成功');
+        setAddModalVisible(false);
+        addForm.resetFields();
+        fetchApplicants();
+      } else {
+        message.error(data.message || '添加失败');
+      }
+    } catch (error) {
+      message.error('网络错误，请稍后重试');
+    } finally {
+      setAddLoading(false);
+    }
+  };
+
   const columns = [
     {
       title: 'ID',
@@ -267,7 +312,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <div style={{ padding: '24px' }}>
       <div style={{ marginBottom: '24px' }}>
-        <Title level={2}>🧪 实验室面试管理后台</Title>
+        <Title level={2}>🧪 EPI实验室面试管理后台</Title>
         <Text type="secondary">管理所有面试申请和状态</Text>
       </div>
 
@@ -319,13 +364,14 @@ const AdminDashboard: React.FC = () => {
       <Card
         title="面试申请列表"
         extra={
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={fetchApplicants}
-            loading={loading}
-          >
-            刷新
-          </Button>
+          <Space>
+            <Button icon={<ReloadOutlined />} onClick={fetchApplicants} loading={loading}>
+              刷新
+            </Button>
+            <Button type="primary" onClick={() => setAddModalVisible(true)}>
+              添加申请
+            </Button>
+          </Space>
         }
       >
         <Table
@@ -343,6 +389,118 @@ const AdminDashboard: React.FC = () => {
           scroll={{ x: 1200 }}
         />
       </Card>
+
+      {/* 添加申请Modal */}
+      <Modal
+        title="添加面试申请"
+        open={addModalVisible}
+        onCancel={() => { setAddModalVisible(false); addForm.resetFields(); }}
+        footer={null}
+        width={600}
+      >
+        {/* 温馨提示 */}
+        <Alert
+          message="请填写完整且格式正确，否则无法提交。"
+          type="info"
+          showIcon
+          style={{ marginBottom: '16px' }}
+        />
+        <Form
+          form={addForm}
+          layout="vertical"
+          initialValues={{
+            grade: '2024',
+            interview_date: dayjs(),
+            interview_time: dayjs().hour(14).minute(0),
+          }}
+          validateTrigger="onChange"
+          onFinish={async (values) => {
+            console.log('onFinish called', values);
+            await handleAddApplicant(values);
+          }}
+          onFinishFailed={({ values, errorFields }) => {
+            message.error('表单校验未通过，请检查红色项');
+            console.log('onFinishFailed', values, errorFields);
+          }}
+        >
+          <Row gutter={[16, 0]}>
+            <Col xs={24} md={12}>
+              <Form.Item name="name" label="姓名" rules={[{ required: true, message: '请输入姓名' }]} validateTrigger="onChange">
+                <Input placeholder="请输入姓名" allowClear onChange={e => addForm.setFieldValue('name', e.target.value)} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item name="email" label="邮箱" rules={[{ required: true, message: '请输入邮箱' }, { type: 'email', message: '请输入有效邮箱' }]} validateTrigger="onChange">
+                <Input placeholder="请输入邮箱" allowClear onChange={e => addForm.setFieldValue('email', e.target.value)} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[16, 0]}>
+            <Col xs={24} md={12}>
+              <Form.Item name="phone" label="手机号码" rules={[{ required: true, message: '请输入手机号码' }, { len: 11, message: '请输入11位手机号码' }]} validateTrigger="onChange">
+                <Input placeholder="请输入手机号码" maxLength={11} allowClear onChange={e => addForm.setFieldValue('phone', e.target.value)} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item name="student_id" label="学号" rules={[{ required: true, message: '请输入学号' }]} validateTrigger="onChange">
+                <Input placeholder="请输入学号" allowClear onChange={e => addForm.setFieldValue('student_id', e.target.value)} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[16, 0]}>
+            <Col xs={24} md={12}>
+              <Form.Item name="major" label="专业" rules={[{ required: true, message: '请选择专业' }]} validateTrigger="onChange">
+                <Select placeholder="请选择专业" allowClear onChange={v => addForm.setFieldValue('major', v)}>
+                  <Option value="计算机科学与技术">计算机科学与技术</Option>
+                  <Option value="软件工程">软件工程</Option>
+                  <Option value="人工智能">人工智能</Option>
+                  <Option value="数据科学">数据科学</Option>
+                  <Option value="网络工程">网络工程</Option>
+                  <Option value="信息安全">信息安全</Option>
+                  <Option value="其他">其他</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item name="grade" label="年级" rules={[{ required: true, message: '请选择年级' }]} validateTrigger="onChange">
+                <Select placeholder="请选择年级" allowClear onChange={v => addForm.setFieldValue('grade', v)}>
+                  <Option value="2021">2021级</Option>
+                  <Option value="2022">2022级</Option>
+                  <Option value="2023">2023级</Option>
+                  <Option value="2024">2024级</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[16, 0]}>
+            <Col xs={24} md={12}>
+              <Form.Item name="interview_date" label="面试日期" rules={[{ required: true, message: '请选择面试日期' }]} validateTrigger="onChange">
+                <DatePicker style={{ width: '100%' }} placeholder="选择面试日期" allowClear onChange={v => addForm.setFieldValue('interview_date', v)} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item name="interview_time" label="面试时间" rules={[{ required: true, message: '请选择面试时间' }]} validateTrigger="onChange">
+                <TimePicker style={{ width: '100%' }} placeholder="选择面试时间" format="HH:mm" minuteStep={30} allowClear onChange={v => addForm.setFieldValue('interview_time', v)} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item style={{ marginTop: '32px' }}>
+            <Button type="primary" htmlType="submit" loading={addLoading} style={{ width: '100%' }}
+              onClick={async () => {
+                const values = addForm.getFieldsValue();
+                const errors = await addForm.validateFields().catch(e => e);
+                console.log('submit click', values, errors);
+                if (!errors || (Array.isArray(errors) && errors.length === 0)) {
+                  // 校验通过但onFinish未触发，手动触发
+                  handleAddApplicant(values);
+                }
+              }}
+            >提交</Button>
+          </Form.Item>
+        </Form>
+        {/* 实时输出表单校验错误，便于调试 */}
+        <pre style={{ color: 'red', fontSize: 12 }}>{JSON.stringify(addForm.getFieldsError && addForm.getFieldsError(), null, 2)}</pre>
+      </Modal>
 
       {/* 编辑模态框 */}
       <Modal

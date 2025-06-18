@@ -107,7 +107,7 @@ const MainLayout: React.FC = () => {
           }}
         >
           <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-            实验室招新平台
+            EPI实验室招新平台
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {loading ? (

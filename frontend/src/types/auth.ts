@@ -52,4 +52,12 @@ export interface ChangePasswordRequest {
 // 刷新令牌响应
 export interface RefreshTokenResponse {
   token: string;
+}
+
+// Admin Response
+export interface AdminResponse {
+  id: number;
+  email: string;
+  role: string;
+  created_at: string;
 } 

@@ -8,12 +8,12 @@ export const loginAsync = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string }) => {
     const response = await authApi.login(credentials);
-    const data = response.data as any;
-    if (data && data.user && data.token) {
-      localStorage.setItem('token', data.token);
-      return data.user;
+    const res = response.data as any;
+    if (res && res.data && res.data.user && res.data.token) {
+      localStorage.setItem('token', res.data.token);
+      return res.data.user;
     }
-    throw new Error('登录失败');
+    throw new Error(res && res.message ? res.message : '登录失败');
   }
 );
 

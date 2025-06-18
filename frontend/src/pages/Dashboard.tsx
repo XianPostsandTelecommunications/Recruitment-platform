@@ -18,7 +18,7 @@ const Dashboard: React.FC = () => {
 
   // 模拟数据
   const stats = [
-    { title: '总实验室数', value: 12, icon: <TeamOutlined />, color: '#1890ff' },
+    { title: 'EPI实验室总数', value: 12, icon: <TeamOutlined />, color: '#1890ff' },
     { title: '我的申请', value: 3, icon: <BookOutlined />, color: '#52c41a' },
     { title: '待审核', value: 1, icon: <ClockCircleOutlined />, color: '#faad14' },
     { title: '已通过', value: 2, icon: <CheckCircleOutlined />, color: '#52c41a' },
@@ -26,7 +26,7 @@ const Dashboard: React.FC = () => {
 
   const recentActivities = [
     {
-      title: '申请了人工智能实验室',
+      title: '申请了人工智能EPI实验室',
       description: '2024-01-15 14:30',
       avatar: <BookOutlined />,
       color: '#1890ff',
@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
       color: '#52c41a',
     },
     {
-      title: '收到实验室通知',
+      title: '收到EPI实验室通知',
       description: '2024-01-13 16:45',
       avatar: <TrophyOutlined />,
       color: '#faad14',
@@ -136,7 +136,7 @@ const Dashboard: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card title="活跃实验室">
+          <Card title="活跃EPI实验室">
             <div style={{ textAlign: 'center' }}>
               <Statistic
                 title="本月新增"

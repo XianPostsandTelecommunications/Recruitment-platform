@@ -11,8 +11,8 @@ const Home: React.FC = () => {
   const features = [
     {
       icon: <TeamOutlined style={{ fontSize: '32px', color: '#1890ff' }} />,
-      title: '实验室管理',
-      description: '浏览和管理实验室信息，了解招新要求',
+      title: 'EPI实验室管理',
+      description: '浏览和管理EPI实验室信息，了解招新要求',
     },
     {
       icon: <TeamOutlined style={{ fontSize: '32px', color: '#52c41a' }} />,
@@ -22,7 +22,7 @@ const Home: React.FC = () => {
     {
       icon: <TeamOutlined style={{ fontSize: '32px', color: '#faad14' }} />,
       title: '成果展示',
-      description: '展示实验室研究成果和项目经验',
+      description: '展示EPI实验室研究成果和项目经验',
     },
   ];
 
@@ -57,8 +57,8 @@ const Home: React.FC = () => {
   return (
     <div style={{ padding: '24px' }}>
       <div style={{ marginBottom: '24px' }}>
-        <h1>欢迎使用实验室招新平台</h1>
-        <p>这是一个现代化的实验室招新管理系统，提供完整的用户管理、实验室管理、申请管理等功能。</p>
+        <h1>欢迎使用EPI实验室招新平台</h1>
+        <p>这是一个现代化的EPI实验室招新管理系统，提供完整的用户管理、EPI实验室管理、申请管理等功能。</p>
         
         {/* 测试功能区域 */}
         <Card title="功能测试" style={{ marginBottom: '24px' }}>
@@ -95,7 +95,7 @@ const Home: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="实验室数量"
+              title="EPI实验室数量"
               value={15}
               prefix={<TeamOutlined />}
               valueStyle={{ color: '#1890ff' }}
@@ -129,7 +129,7 @@ const Home: React.FC = () => {
           <Card title="快速操作">
             <Space direction="vertical" style={{ width: '100%' }}>
               <Button type="primary" block>
-                查看实验室列表
+                查看EPI实验室列表
               </Button>
               <Button block>
                 提交申请
@@ -147,7 +147,7 @@ const Home: React.FC = () => {
           <Card title="系统公告">
             <div>
               <p><strong>2024年春季招新开始</strong></p>
-              <p>各实验室已开始接受2024年春季招新申请，请有意向的同学及时提交申请。</p>
+              <p>EPI实验室已开始接受2024年春季招新申请，请有意向的同学及时提交申请。</p>
               <p style={{ color: '#666', fontSize: '12px' }}>发布时间：2024-01-15</p>
             </div>
             <div style={{ marginTop: '16px' }}>

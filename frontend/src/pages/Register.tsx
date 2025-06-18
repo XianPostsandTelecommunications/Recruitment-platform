@@ -48,7 +48,7 @@ const Register: React.FC = () => {
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <Title level={2} style={{ marginBottom: 8 }}>
-            实验室招新平台
+            EPI实验室招新平台
           </Title>
           <Text type="secondary">创建您的账户</Text>
         </div>

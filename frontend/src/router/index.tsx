@@ -39,8 +39,8 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const TestHome: React.FC = () => {
   return (
     <div style={{ padding: '20px' }}>
-      <h1>实验室招新平台</h1>
-      <p>欢迎使用实验室招新平台！</p>
+      <h1>EPI实验室招新平台</h1>
+      <p>欢迎使用EPI实验室招新平台！</p>
       <div style={{ 
         padding: '20px', 
         backgroundColor: '#f0f2f5', 
@@ -89,7 +89,7 @@ const AppRouter: React.FC = () => {
         </div>
       }>
         <Routes>
-          {/* 首页重定向到报名实验室页面 */}
+          {/* 首页重定向到报名EPI实验室页面 */}
           <Route path="/" element={<Navigate to="/apply" replace />} />
           
           {/* 面试申请页面 */}

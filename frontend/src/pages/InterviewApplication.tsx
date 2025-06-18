@@ -50,6 +50,10 @@ const InterviewApplication: React.FC = () => {
   const [codeSent, setCodeSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
+  React.useEffect(() => {
+    message.info('测试弹窗');
+  }, []);
+
   // 发送验证码
   const handleSendCode = async () => {
     const email = form.getFieldValue('email');
@@ -112,6 +116,7 @@ const InterviewApplication: React.FC = () => {
 
   // 提交申请
   const handleSubmit = async (values: ApplicationForm) => {
+    message.success('已提交（测试弹窗）');
     setLoading(true);
     try {
       const interviewDateTime = values.interview_date
@@ -138,6 +143,7 @@ const InterviewApplication: React.FC = () => {
 
       const data = await response.json();
       if (data.code === 200) {
+        alert('申请提交成功！');
         message.success({
           content: '🎉 申请提交成功！我们会尽快联系您安排面试。',
           duration: 5,
@@ -146,25 +152,23 @@ const InterviewApplication: React.FC = () => {
             fontWeight: 'bold',
           },
         });
-        form.resetFields();
-        setCodeSent(false);
-        setCountdown(0);
+        setTimeout(() => {
+          form.resetFields();
+          setCodeSent(false);
+          setCountdown(0);
+        }, 1000);
       } else {
         message.error({
-          content: data.message || '❌ 申请提交失败，请检查信息后重试',
+          content: data.message || '❌ 申请提交失败，请检查信息或稍后重试',
           duration: 4,
-          style: {
-            fontSize: '14px',
-          },
+          style: { fontSize: '14px' },
         });
       }
     } catch (error) {
       message.error({
         content: '❌ 网络错误，请稍后重试',
         duration: 4,
-        style: {
-          fontSize: '14px',
-        },
+        style: { fontSize: '14px' },
       });
     } finally {
       setLoading(false);
@@ -191,10 +195,10 @@ const InterviewApplication: React.FC = () => {
           {/* 头部信息 */}
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <Title level={2} style={{ color: '#1890ff', marginBottom: '8px' }}>
-              🧪 实验室面试申请
+              🧪 EPI实验室面试申请
             </Title>
             <Paragraph type="secondary" style={{ fontSize: '16px' }}>
-              欢迎加入我们的实验室！请填写以下信息完成面试申请
+              欢迎加入我们的EPI实验室！请填写以下信息完成面试申请
             </Paragraph>
           </div>
 
@@ -203,6 +207,15 @@ const InterviewApplication: React.FC = () => {
             message="申请说明"
             description="请确保填写的信息真实准确，我们会在收到申请后尽快安排面试时间。面试将通过邮件或电话通知。"
             type="info"
+            showIcon
+            style={{ marginBottom: '24px' }}
+          />
+
+          {/* 弹窗异常提示 */}
+          <Alert
+            message="温馨提示"
+            description="若无成功弹窗请重新再尝试，出现问题直接联系EPI实验室人员。"
+            type="warning"
             showIcon
             style={{ marginBottom: '24px' }}
           />

@@ -15,10 +15,23 @@ const Login: React.FC = () => {
 
   const onFinish = async (values: UserLoginRequest) => {
     try {
-      await dispatch(loginAsync(values)).unwrap();
+      const user = await dispatch(loginAsync(values)).unwrap();
+      console.log('登录返回user:', user);
+      console.log('typeof user:', typeof user);
+      if (user) {
+        console.log('user.role:', user.role);
+        console.log('typeof user.role:', typeof user.role);
+      }
       message.success('登录成功');
-      navigate('/');
+      
+      // 根据用户角色决定跳转路径
+      if (user && user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
+      console.error('登录异常:', err);
       // 错误已在 Redux 中处理
     }
   };
@@ -47,7 +60,7 @@ const Login: React.FC = () => {
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <Title level={2} style={{ marginBottom: 8 }}>
-            实验室招新平台
+            EPI实验室招新平台
           </Title>
           <Text type="secondary">请登录您的账户</Text>
         </div>
