@@ -217,7 +217,7 @@ const AdminDashboard: React.FC = () => {
           major: values.major,
           grade: values.grade,
           interview_time: interviewDateTime,
-          verification_code: 'admin', // 后端如必填可用占位
+          verification_code: '999999', // 管理员添加使用测试验证码
         }),
       });
       const data = await response.json();
@@ -498,7 +498,7 @@ const AdminDashboard: React.FC = () => {
           form={addForm}
           layout="vertical"
           initialValues={{
-            grade: '2024',
+            grade: '大一',
             interview_date: dayjs(),
             interview_time: dayjs().hour(14).minute(0),
           }}
@@ -553,10 +553,9 @@ const AdminDashboard: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item name="grade" label="年级" rules={[{ required: true, message: '请选择年级' }]} validateTrigger="onChange">
                 <Select placeholder="请选择年级" allowClear onChange={v => addForm.setFieldValue('grade', v)}>
-                  <Option value="2021">2021级</Option>
-                  <Option value="2022">2022级</Option>
-                  <Option value="2023">2023级</Option>
-                  <Option value="2024">2024级</Option>
+                  <Option value="大一">大一</Option>
+                  <Option value="大二">大二</Option>
+                  <Option value="大三">大三</Option>
                 </Select>
               </Form.Item>
             </Col>
