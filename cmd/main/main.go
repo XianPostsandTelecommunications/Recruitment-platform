@@ -125,6 +125,11 @@ func main() {
 			auth.POST("/change-password", middleware.AuthMiddleware(), authHandler.ChangePassword)
 		}
 
+		// 申请相关路由
+		applicationHandler := handlers.NewApplicationHandler()
+		api.POST("/send-code", applicationHandler.SendCode)
+		api.POST("/apply", applicationHandler.Apply)
+
 		// 用户管理路由（需要管理员权限）
 		// userHandler := handlers.NewUserHandler()
 		// users := api.Group("/users")
