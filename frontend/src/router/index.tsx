@@ -4,7 +4,7 @@ import { Spin } from 'antd';
 import { useAppSelector } from '../hooks/useAppSelector';
 import MainLayout from '../layouts/MainLayout';
 import Login from '../pages/Login';
-import Register from '../pages/Register';
+
 import Home from '../pages/Home';
 import Dashboard from '../pages/Dashboard';
 import InterviewApplication from '../pages/InterviewApplication';
@@ -108,11 +108,7 @@ const AppRouter: React.FC = () => {
               <Login />
             </PublicRoute>
           } />
-          <Route path="/register" element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          } />
+
           
           {/* 受保护的路由 */}
           <Route path="/dashboard" element={

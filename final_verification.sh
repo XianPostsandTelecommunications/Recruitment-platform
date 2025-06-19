@@ -119,7 +119,7 @@ echo "   • API文档: http://localhost:8080/swagger/index.html"
 echo "   • 健康检查: http://localhost:8080/health"
 
 echo -e "\n${GREEN}🔧 核心功能状态:${NC}"
-echo "   ✅ 用户注册/登录"
+echo "   ✅ 管理员登录"
 echo "   ✅ 邮箱验证码发送" 
 echo "   ✅ 面试申请提交"
 echo "   ✅ 数据库持久化存储"

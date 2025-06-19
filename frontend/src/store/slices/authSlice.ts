@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { UserResponse, UserRegisterRequest } from '../../types/auth';
+import type { UserResponse } from '../../types/auth';
 import * as authApi from '../../api/auth';
 
 // 异步action：登录
@@ -17,19 +17,7 @@ export const loginAsync = createAsyncThunk(
   }
 );
 
-// 异步action：注册
-export const registerAsync = createAsyncThunk(
-  'auth/register',
-  async (userData: UserRegisterRequest) => {
-    const response = await authApi.register(userData);
-    const data = response.data as any;
-    if (data && data.user && data.token) {
-      localStorage.setItem('token', data.token);
-      return data.user;
-    }
-    throw new Error('注册失败');
-  }
-);
+
 
 // 异步action：获取用户信息
 export const getProfileAsync = createAsyncThunk(
@@ -113,23 +101,7 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
       });
 
-    // 注册
-    builder
-      .addCase(registerAsync.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(registerAsync.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-        state.token = localStorage.getItem('token');
-        state.isAuthenticated = true;
-      })
-      .addCase(registerAsync.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || '注册失败';
-        state.isAuthenticated = false;
-      });
+
 
     // 获取用户信息
     builder

@@ -1,10 +1,4 @@
-// 用户注册请求
-export interface UserRegisterRequest {
-  username: string;
-  email: string;
-  password: string;
-  role?: 'student' | 'admin';
-}
+
 
 // 用户登录请求
 export interface UserLoginRequest {

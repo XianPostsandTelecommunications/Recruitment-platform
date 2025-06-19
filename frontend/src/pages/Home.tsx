@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Row, Col, Button, Space, Statistic, message } from 'antd';
 import { UserOutlined, TeamOutlined, FileTextOutlined, BellOutlined } from '@ant-design/icons';
 import { useAppDispatch, useAppSelector } from '../hooks/useAppSelector';
-import { loginAsync, registerAsync } from '../store/slices/authSlice';
+import { loginAsync } from '../store/slices/authSlice';
 
 const Home: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -39,20 +39,7 @@ const Home: React.FC = () => {
     }
   };
 
-  // 测试注册功能
-  const handleTestRegister = async () => {
-    try {
-      await dispatch(registerAsync({
-        username: 'testuser',
-        email: 'testuser@example.com',
-        password: '123456',
-        role: 'student'
-      })).unwrap();
-      message.success('测试注册成功！');
-    } catch (error) {
-      message.error('测试注册失败：' + (error as Error).message);
-    }
-  };
+
 
   return (
     <div style={{ padding: '24px' }}>
@@ -65,9 +52,6 @@ const Home: React.FC = () => {
           <Space>
             <Button type="primary" onClick={handleTestLogin}>
               测试登录 (admin@example.com / 123456)
-            </Button>
-            <Button onClick={handleTestRegister}>
-              测试注册新用户
             </Button>
           </Space>
           {isAuthenticated && user && (

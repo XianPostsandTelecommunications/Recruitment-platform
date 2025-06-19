@@ -1,7 +1,7 @@
 import React from 'react';
-import { Form, Input, Button, Card, Typography, message, Space } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { Form, Input, Button, Card, Typography, message } from 'antd';
+import { LockOutlined, MailOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/useAppSelector';
 import { loginAsync, clearError } from '../store/slices/authSlice';
 import type { UserLoginRequest } from '../types/auth';
@@ -110,12 +110,7 @@ const Login: React.FC = () => {
           </Form.Item>
 
           <div style={{ textAlign: 'center' }}>
-            <Space>
-              <Text type="secondary">还没有账户？</Text>
-              <Link to="/register">
-                <Text type="primary">立即注册</Text>
-              </Link>
-            </Space>
+            <Text type="secondary">请使用管理员账号登录</Text>
           </div>
         </Form>
       </Card>

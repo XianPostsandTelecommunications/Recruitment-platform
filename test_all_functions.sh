@@ -115,20 +115,23 @@ test_api "缺少参数申请" "POST" "http://localhost:8080/api/v1/apply" \
 # 测试认证接口
 echo -e "\n${YELLOW}=== 认证功能测试 ===${NC}"
 
-# 8. 用户注册
-REGISTER_DATA="{
-    \"username\":\"testuser\",
-    \"email\":\"testuser@example.com\",
-    \"password\":\"password123\",
-    \"role\":\"student\"
-}"
-test_api "用户注册" "POST" "http://localhost:8080/api/v1/auth/register" \
-    "$REGISTER_DATA" "200"
+# 8. 管理员账号验证
+echo -e "\n${BLUE}[测试 $((TOTAL_TESTS + 1))] 管理员账号验证${NC}"
+TOTAL_TESTS=$((TOTAL_TESTS + 1))
+echo "检查管理员账号是否存在并可用"
+admin_exists=$(sudo mysql -u root -proot -e "USE lab_recruitment; SELECT COUNT(*) FROM users WHERE email='1234567@qq.com' AND role='admin';" 2>/dev/null | tail -1)
+if [ "$admin_exists" -gt 0 ]; then
+    echo -e "${GREEN}✅ 管理员账号存在${NC}"
+    PASSED_TESTS=$((PASSED_TESTS + 1))
+else
+    echo -e "${RED}❌ 管理员账号不存在${NC}"
+    FAILED_TESTS=$((FAILED_TESTS + 1))
+fi
 
-# 9. 用户登录
+# 9. 管理员登录
 LOGIN_DATA="{
-    \"email\":\"testuser@example.com\",
-    \"password\":\"password123\"
+    \"email\":\"1234567@qq.com\",
+    \"password\":\"epi666\"
 }"
 login_response=$(curl -s -X POST \
     -H "Content-Type: application/json" \
@@ -140,7 +143,7 @@ login_code=$(curl -s -w "%{http_code}" -X POST \
     -d "$LOGIN_DATA" \
     "http://localhost:8080/api/v1/auth/login" | tail -c 3)
 
-echo -e "\n${BLUE}[测试 $((TOTAL_TESTS + 1))] 用户登录${NC}"
+echo -e "\n${BLUE}[测试 $((TOTAL_TESTS + 1))] 管理员登录${NC}"
 TOTAL_TESTS=$((TOTAL_TESTS + 1))
 echo "请求: POST http://localhost:8080/api/v1/auth/login"
 echo "状态码: $login_code"

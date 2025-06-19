@@ -62,13 +62,7 @@ func (u *User) IsActive() bool {
 	return u.Status == "active"
 }
 
-// UserRegisterRequest 用户注册请求
-type UserRegisterRequest struct {
-	Username string `json:"username" validate:"required,min=3,max=20"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6,max=20"`
-	Role     string `json:"role" validate:"omitempty,oneof=student admin"`
-}
+
 
 // UserLoginRequest 用户登录请求
 type UserLoginRequest struct {

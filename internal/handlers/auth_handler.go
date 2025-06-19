@@ -22,51 +22,7 @@ func NewAuthHandler() *AuthHandler {
 	}
 }
 
-// Register 用户注册
-// @Summary 用户注册
-// @Description 用户注册接口
-// @Tags 认证
-// @Accept json
-// @Produce json
-// @Param request body models.UserRegisterRequest true "注册信息"
-// @Success 200 {object} response.Response{data=models.UserResponse}
-// @Failure 400 {object} response.Response
-// @Failure 409 {object} response.Response
-// @Router /auth/register [post]
-func (h *AuthHandler) Register(c *gin.Context) {
-	var req models.UserRegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.BadRequest(c, "请求参数错误")
-		return
-	}
 
-	// 验证请求参数
-	if !validator.ValidateRequest(c, &req) {
-		return
-	}
-
-	// 创建用户
-	user, err := h.userService.CreateUser(&req)
-	if err != nil {
-		logger.Errorf("用户注册失败: %v", err)
-		response.Conflict(c, err.Error())
-		return
-	}
-
-	// 生成JWT令牌
-	token, err := middleware.GenerateToken(user)
-	if err != nil {
-		logger.Errorf("生成令牌失败: %v", err)
-		response.InternalServerError(c, "生成令牌失败")
-		return
-	}
-
-	// 返回用户信息和令牌
-	response.SuccessWithMessage(c, "注册成功", gin.H{
-		"user":  user.ToResponse(),
-		"token": token,
-	})
-}
 
 // Login 用户登录
 // @Summary 用户登录

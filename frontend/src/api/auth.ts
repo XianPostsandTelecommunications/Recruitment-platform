@@ -1,6 +1,5 @@
 import instance from './instance';
 import type { 
-  UserRegisterRequest, 
   UserLoginRequest, 
   UserUpdateRequest, 
   UserResponse, 
@@ -10,9 +9,7 @@ import type {
 } from '../types/auth';
 import type { ApiResponse } from '../types/common';
 
-// 用户注册
-export const register = (data: UserRegisterRequest) =>
-  instance.post<ApiResponse<LoginResponse>>('/auth/register', data);
+
 
 // 用户登录
 export const login = (data: UserLoginRequest) =>

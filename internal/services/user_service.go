@@ -22,45 +22,7 @@ func NewUserService() *UserService {
 	}
 }
 
-// CreateUser 创建用户
-func (s *UserService) CreateUser(req *models.UserRegisterRequest) (*models.User, error) {
-	// 检查邮箱是否已存在
-	var existingUser models.User
-	if err := s.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
-		return nil, errors.New("邮箱已存在")
-	}
 
-	// 检查用户名是否已存在
-	if err := s.db.Where("username = ?", req.Username).First(&existingUser).Error; err == nil {
-		return nil, errors.New("用户名已存在")
-	}
-
-	// 加密密码
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		logger.Errorf("密码加密失败: %v", err)
-		return nil, errors.New("密码加密失败")
-	}
-
-	// 创建用户
-	user := &models.User{
-		Username: req.Username,
-		Email:    req.Email,
-		Password: string(hashedPassword),
-		Role:     req.Role,
-	}
-
-	if user.Role == "" {
-		user.Role = "student"
-	}
-
-	if err := s.db.Create(user).Error; err != nil {
-		logger.Errorf("创建用户失败: %v", err)
-		return nil, errors.New("创建用户失败")
-	}
-
-	return user, nil
-}
 
 // GetUserByID 根据ID获取用户
 func (s *UserService) GetUserByID(id uint) (*models.User, error) {

@@ -34,34 +34,7 @@
 
 ## 认证相关接口
 
-### 用户注册
 
-**接口地址**: `POST /auth/register`
-
-**请求参数**:
-```json
-{
-  "username": "string",     // 用户名，必填，长度3-20
-  "email": "string",        // 邮箱，必填，格式正确
-  "password": "string",     // 密码，必填，长度6-20
-  "role": "student"         // 角色，可选，默认student
-}
-```
-
-**响应示例**:
-```json
-{
-  "code": 200,
-  "message": "注册成功",
-  "data": {
-    "id": 1,
-    "username": "张三",
-    "email": "zhangsan@example.com",
-    "role": "student",
-    "createdAt": "2024-01-01T00:00:00Z"
-  }
-}
-```
 
 ### 用户登录
 
