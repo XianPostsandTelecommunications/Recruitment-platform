@@ -50,9 +50,7 @@ const InterviewApplication: React.FC = () => {
   const [codeSent, setCodeSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
-  React.useEffect(() => {
-    message.info('测试弹窗');
-  }, []);
+
 
   // 发送验证码
   const handleSendCode = async () => {
@@ -73,6 +71,7 @@ const InterviewApplication: React.FC = () => {
       });
 
       const data = await response.json();
+      
       if (data.code === 200) {
         message.success({
           content: '📧 验证码已发送到邮箱，请注意查收',
@@ -92,10 +91,24 @@ const InterviewApplication: React.FC = () => {
             return prev - 1;
           });
         }, 1000);
-      } else {
+              } else {
+        // 处理不同类型的错误信息
+        let errorMessage = '❌ 发送验证码失败，请稍后重试';
+        if (data.message) {
+          if (data.message.includes('email格式不正确')) {
+            errorMessage = '❌ 邮箱格式不正确，请输入有效的邮箱地址';
+          } else if (data.message.includes('email不能为空')) {
+            errorMessage = '❌ 请输入邮箱地址';
+          } else if (data.message.includes('Content-Type')) {
+            errorMessage = '❌ 系统错误，请刷新页面重试';
+          } else {
+            errorMessage = `❌ ${data.message}`;
+          }
+        }
+        
         message.error({
-          content: data.message || '❌ 发送验证码失败，请稍后重试',
-          duration: 4,
+          content: errorMessage,
+          duration: 5,
           style: {
             fontSize: '14px',
           },
@@ -116,7 +129,6 @@ const InterviewApplication: React.FC = () => {
 
   // 提交申请
   const handleSubmit = async (values: ApplicationForm) => {
-    message.success('已提交（测试弹窗）');
     setLoading(true);
     try {
       const interviewDateTime = values.interview_date
@@ -142,8 +154,8 @@ const InterviewApplication: React.FC = () => {
       });
 
       const data = await response.json();
+      
       if (data.code === 200) {
-        alert('申请提交成功！');
         message.success({
           content: '🎉 申请提交成功！我们会尽快联系您安排面试。',
           duration: 5,
@@ -157,10 +169,28 @@ const InterviewApplication: React.FC = () => {
           setCodeSent(false);
           setCountdown(0);
         }, 1000);
-      } else {
+              } else {
+        // 处理不同类型的错误信息
+        let errorMessage = '❌ 申请提交失败，请检查信息或稍后重试';
+        if (data.message) {
+          if (data.message.includes('验证码错误') || data.message.includes('验证码已过期')) {
+            errorMessage = '❌ 验证码错误或已过期，请重新获取验证码';
+          } else if (data.message.includes('该邮箱已提交过申请')) {
+            errorMessage = '❌ 该邮箱已提交过申请，请勿重复申请';
+          } else if (data.message.includes('不能为空')) {
+            errorMessage = '❌ 请填写完整的申请信息';
+          } else if (data.message.includes('格式不正确')) {
+            errorMessage = '❌ 请检查邮箱或手机号格式是否正确';
+          } else if (data.message.includes('Content-Type')) {
+            errorMessage = '❌ 系统错误，请刷新页面重试';
+          } else {
+            errorMessage = `❌ ${data.message}`;
+          }
+        }
+        
         message.error({
-          content: data.message || '❌ 申请提交失败，请检查信息或稍后重试',
-          duration: 4,
+          content: errorMessage,
+          duration: 6,
           style: { fontSize: '14px' },
         });
       }
@@ -211,14 +241,7 @@ const InterviewApplication: React.FC = () => {
             style={{ marginBottom: '24px' }}
           />
 
-          {/* 弹窗异常提示 */}
-          <Alert
-            message="温馨提示"
-            description="若无成功弹窗请重新再尝试，出现问题直接联系EPI实验室人员。"
-            type="warning"
-            showIcon
-            style={{ marginBottom: '24px' }}
-          />
+
 
           <Form
             form={form}
@@ -226,7 +249,7 @@ const InterviewApplication: React.FC = () => {
             onFinish={handleSubmit}
             size="large"
             initialValues={{
-              grade: '2024',
+              grade: '大一',
               interview_date: dayjs(),
               interview_time: dayjs().hour(14).minute(0),
             }}
@@ -236,7 +259,11 @@ const InterviewApplication: React.FC = () => {
                 <Form.Item
                   name="name"
                   label="姓名"
-                  rules={[{ required: true, message: '请输入姓名' }]}
+                  rules={[
+                    { required: true, message: '🙋‍♂️ 请输入您的真实姓名' },
+                    { min: 2, message: '👤 姓名至少需要2个字符' },
+                    { max: 20, message: '👤 姓名不能超过20个字符' }
+                  ]}
                 >
                   <Input
                     prefix={<UserOutlined />}
@@ -249,13 +276,14 @@ const InterviewApplication: React.FC = () => {
                   name="email"
                   label="邮箱"
                   rules={[
-                    { required: true, message: '请输入邮箱' },
-                    { type: 'email', message: '请输入有效的邮箱地址' },
+                    { required: true, message: '📧 请输入邮箱地址' },
+                    { type: 'email', message: '📧 请输入有效的邮箱地址，如：example@qq.com' },
+                    { max: 100, message: '📧 邮箱地址不能超过100个字符' }
                   ]}
                 >
                   <Input
                     prefix={<MailOutlined />}
-                    placeholder="请输入邮箱地址"
+                    placeholder="请输入邮箱地址，如：yourname@qq.com"
                   />
                 </Form.Item>
               </Col>
@@ -267,13 +295,15 @@ const InterviewApplication: React.FC = () => {
                   name="phone"
                   label="手机号码"
                   rules={[
-                    { required: true, message: '请输入手机号码' },
-                    { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号码' },
+                    { required: true, message: '📱 请输入手机号码' },
+                    { pattern: /^1[3-9]\d{9}$/, message: '📱 请输入正确的11位手机号码，如：138xxxx8888' },
+                    { len: 11, message: '📱 手机号码必须是11位数字' }
                   ]}
                 >
                   <Input
                     prefix={<PhoneOutlined />}
-                    placeholder="请输入手机号码"
+                    placeholder="请输入11位手机号码"
+                    maxLength={11}
                   />
                 </Form.Item>
               </Col>
@@ -281,11 +311,15 @@ const InterviewApplication: React.FC = () => {
                 <Form.Item
                   name="student_id"
                   label="学号"
-                  rules={[{ required: true, message: '请输入学号' }]}
+                  rules={[
+                    { required: true, message: '🎓 请输入学号' },
+                    { min: 6, message: '🎓 学号至少需要6位' },
+                    { max: 20, message: '🎓 学号不能超过20位' }
+                  ]}
                 >
                   <Input
                     prefix={<IdcardOutlined />}
-                    placeholder="请输入学号"
+                    placeholder="请输入您的学号"
                   />
                 </Form.Item>
               </Col>
@@ -296,15 +330,18 @@ const InterviewApplication: React.FC = () => {
                 <Form.Item
                   name="major"
                   label="专业"
-                  rules={[{ required: true, message: '请选择专业' }]}
+                  rules={[{ required: true, message: '📚 请选择您的专业' }]}
                 >
-                  <Select placeholder="请选择专业">
+                  <Select placeholder="请选择您的专业" showSearch>
                     <Option value="计算机科学与技术">计算机科学与技术</Option>
                     <Option value="软件工程">软件工程</Option>
                     <Option value="人工智能">人工智能</Option>
                     <Option value="数据科学">数据科学</Option>
                     <Option value="网络工程">网络工程</Option>
                     <Option value="信息安全">信息安全</Option>
+                    <Option value="物联网工程">物联网工程</Option>
+                    <Option value="电子信息工程">电子信息工程</Option>
+                    <Option value="通信工程">通信工程</Option>
                     <Option value="其他">其他</Option>
                   </Select>
                 </Form.Item>
@@ -313,13 +350,12 @@ const InterviewApplication: React.FC = () => {
                 <Form.Item
                   name="grade"
                   label="年级"
-                  rules={[{ required: true, message: '请选择年级' }]}
+                  rules={[{ required: true, message: '🎓 请选择您的年级' }]}
                 >
-                  <Select placeholder="请选择年级">
-                    <Option value="2021">2021级</Option>
-                    <Option value="2022">2022级</Option>
-                    <Option value="2023">2023级</Option>
-                    <Option value="2024">2024级</Option>
+                  <Select placeholder="请选择您的年级">
+                    <Option value="大一">大一</Option>
+                    <Option value="大二">大二</Option>
+                    <Option value="大三">大三</Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -332,11 +368,11 @@ const InterviewApplication: React.FC = () => {
                 <Form.Item
                   name="interview_date"
                   label="面试日期"
-                  rules={[{ required: true, message: '请选择面试日期' }]}
+                  rules={[{ required: true, message: '📅 请选择您希望的面试日期' }]}
                 >
                   <DatePicker
                     style={{ width: '100%' }}
-                    placeholder="选择面试日期"
+                    placeholder="选择面试日期（不能选择过去的日期）"
                     disabledDate={(current) => current && current < dayjs().startOf('day')}
                   />
                 </Form.Item>

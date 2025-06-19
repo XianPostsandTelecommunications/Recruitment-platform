@@ -83,6 +83,7 @@ func main() {
 		&models.Lab{},
 		&models.Application{},
 		&models.Notification{},
+		&models.InterviewApplication{},
 	); err != nil {
 		logger.Fatalf("数据库迁移失败: %v", err)
 	}
@@ -128,6 +129,17 @@ func main() {
 		applicationHandler := handlers.NewApplicationHandler()
 		api.POST("/send-code", applicationHandler.SendCode)
 		api.POST("/apply", applicationHandler.Apply)
+
+		// 管理员申请管理路由
+		admin := api.Group("/admin")
+		admin.Use(middleware.AuthMiddleware()) // 需要登录验证
+		{
+			admin.GET("/applications", applicationHandler.ListApplications)
+			admin.GET("/applications/stats", applicationHandler.GetApplicationStats)
+			admin.GET("/applications/:id", applicationHandler.GetApplication)
+			admin.PUT("/applications/:id", applicationHandler.UpdateApplication)
+			admin.DELETE("/applications/:id", applicationHandler.DeleteApplication)
+		}
 
 		// 用户管理路由（需要管理员权限）
 		// userHandler := handlers.NewUserHandler()

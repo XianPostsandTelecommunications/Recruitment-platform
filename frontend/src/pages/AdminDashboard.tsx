@@ -62,15 +62,29 @@ const AdminDashboard: React.FC = () => {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [addForm] = Form.useForm();
   const [addLoading, setAddLoading] = useState(false);
+  const [searchName, setSearchName] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   // 获取申请者列表
-  const fetchApplicants = async () => {
+  const fetchApplicants = async (name = searchName, status = statusFilter) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/applicants');
+      // 构建查询参数
+      const params = new URLSearchParams();
+      if (name) params.append('name', name);
+      if (status) params.append('status', status);
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/v1/admin/applications?${params.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
       const data = await response.json();
       if (data.code === 200) {
-        setApplicants(data.data || []);
+        setApplicants(data.data?.list || []);
       } else {
         message.error(data.message || '获取数据失败');
       }
@@ -90,12 +104,17 @@ const AdminDashboard: React.FC = () => {
     if (!selectedApplicant) return;
 
     try {
-      const response = await fetch(`/api/v1/applicants/${selectedApplicant.id}/status`, {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/v1/admin/applications/${selectedApplicant.id}`, {
         method: 'PUT',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          status: values.status,
+          admin_remarks: values.first_remark || values.second_remark || values.third_remark || ''
+        }),
       });
 
       const data = await response.json();
@@ -115,8 +134,13 @@ const AdminDashboard: React.FC = () => {
   // 删除申请
   const handleDelete = async (id: number) => {
     try {
-      const response = await fetch(`/api/v1/applicants/${id}`, {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/v1/admin/applications/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       const data = await response.json();
@@ -147,10 +171,9 @@ const AdminDashboard: React.FC = () => {
   const getStatusTag = (status: string) => {
     const statusMap = {
       pending: { color: 'orange', text: '待面试', icon: <ClockCircleOutlined /> },
-      first_pass: { color: 'blue', text: '一面通过', icon: <CheckCircleOutlined /> },
-      second_pass: { color: 'purple', text: '二面通过', icon: <CheckCircleOutlined /> },
-      passed: { color: 'green', text: '通过', icon: <CheckCircleOutlined /> },
-      rejected: { color: 'red', text: '未通过', icon: <CloseCircleOutlined /> },
+      interviewed: { color: 'blue', text: '已面试', icon: <CheckCircleOutlined /> },
+      passed: { color: 'green', text: '已通过', icon: <CheckCircleOutlined /> },
+      rejected: { color: 'red', text: '已拒绝', icon: <CloseCircleOutlined /> },
     };
 
     const config = statusMap[status as keyof typeof statusMap] || statusMap.pending;
@@ -165,10 +188,11 @@ const AdminDashboard: React.FC = () => {
   const getStats = () => {
     const total = applicants.length;
     const pending = applicants.filter(a => a.status === 'pending').length;
+    const interviewed = applicants.filter(a => a.status === 'interviewed').length;
     const passed = applicants.filter(a => a.status === 'passed').length;
     const rejected = applicants.filter(a => a.status === 'rejected').length;
 
-    return { total, pending, passed, rejected };
+    return { total, pending, interviewed, passed, rejected };
   };
 
   const stats = getStats();
@@ -318,7 +342,7 @@ const AdminDashboard: React.FC = () => {
 
       {/* 统计卡片 */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-        <Col xs={12} sm={6}>
+        <Col xs={24} sm={12} lg={8} xl={6}>
           <Card>
             <Statistic
               title="总申请数"
@@ -328,7 +352,7 @@ const AdminDashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={12} sm={6}>
+        <Col xs={12} sm={6} lg={4} xl={3}>
           <Card>
             <Statistic
               title="待面试"
@@ -338,7 +362,17 @@ const AdminDashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={12} sm={6}>
+        <Col xs={12} sm={6} lg={4} xl={3}>
+          <Card>
+            <Statistic
+              title="已面试"
+              value={stats.interviewed}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#722ed1' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6} lg={4} xl={3}>
           <Card>
             <Statistic
               title="已通过"
@@ -348,10 +382,10 @@ const AdminDashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={12} sm={6}>
+        <Col xs={12} sm={6} lg={4} xl={3}>
           <Card>
             <Statistic
-              title="未通过"
+              title="已拒绝"
               value={stats.rejected}
               prefix={<CloseCircleOutlined />}
               valueStyle={{ color: '#ff4d4f' }}
@@ -365,7 +399,7 @@ const AdminDashboard: React.FC = () => {
         title="面试申请列表"
         extra={
           <Space>
-            <Button icon={<ReloadOutlined />} onClick={fetchApplicants} loading={loading}>
+            <Button icon={<ReloadOutlined />} onClick={() => fetchApplicants()} loading={loading}>
               刷新
             </Button>
             <Button type="primary" onClick={() => setAddModalVisible(true)}>
@@ -374,6 +408,61 @@ const AdminDashboard: React.FC = () => {
           </Space>
         }
       >
+        {/* 搜索和过滤区域 */}
+        <div style={{ marginBottom: '16px' }}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} md={8}>
+              <Input.Search
+                placeholder="🔍 输入姓名搜索申请人"
+                allowClear
+                enterButton="搜索"
+                size="middle"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                onSearch={(value) => {
+                  setSearchName(value);
+                  fetchApplicants(value, statusFilter);
+                }}
+                style={{ width: '100%' }}
+              />
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                placeholder="选择状态过滤"
+                allowClear
+                size="middle"
+                value={statusFilter || undefined}
+                onChange={(value) => {
+                  setStatusFilter(value || '');
+                  fetchApplicants(searchName, value || '');
+                }}
+                style={{ width: '100%' }}
+              >
+                <Option value="">全部状态</Option>
+                <Option value="pending">待面试</Option>
+                <Option value="interviewed">已面试</Option>
+                <Option value="passed">已通过</Option>
+                <Option value="rejected">已拒绝</Option>
+              </Select>
+            </Col>
+            <Col xs={24} sm={24} md={10}>
+              <Space>
+                <Button 
+                  onClick={() => {
+                    setSearchName('');
+                    setStatusFilter('');
+                    fetchApplicants('', '');
+                  }}
+                >
+                  清除条件
+                </Button>
+                <Text type="secondary">
+                  {applicants.length > 0 && `共找到 ${applicants.length} 条记录`}
+                </Text>
+              </Space>
+            </Col>
+          </Row>
+        </div>
         <Table
           columns={columns}
           dataSource={applicants}
@@ -535,10 +624,9 @@ const AdminDashboard: React.FC = () => {
           >
             <Select placeholder="请选择面试状态">
               <Option value="pending">待面试</Option>
-              <Option value="first_pass">一面通过</Option>
-              <Option value="second_pass">二面通过</Option>
-              <Option value="passed">通过</Option>
-              <Option value="rejected">未通过</Option>
+              <Option value="interviewed">已面试</Option>
+              <Option value="passed">已通过</Option>
+              <Option value="rejected">已拒绝</Option>
             </Select>
           </Form.Item>
 
